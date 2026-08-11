@@ -32,11 +32,12 @@ router.post('/register', async (req, res, next) => {
         return res.status(409).json({ message: 'Email already registered.' });
       }
       const passwordHash = await bcrypt.default.hash(password, 10);
+      const totalUsers = await User.countDocuments();
       const doc = await User.create({
         name: name?.trim() || email.split('@')[0],
         email: email.toLowerCase().trim(),
         passwordHash,
-        role: 'admin'
+        role: totalUsers === 0 ? 'admin' : 'user'
       });
       return res.status(201).json(authPayload(doc));
     }
@@ -97,7 +98,13 @@ router.post('/google', async (req, res, next) => {
     if (User?.db?.readyState === 1) {
       let user = await User.findOne({ email: normalizedEmail });
       if (!user) {
-        user = await User.create({ name: displayName, email: normalizedEmail, role: 'admin', passwordHash: 'google-oauth' });
+        const totalUsers = await User.countDocuments();
+        user = await User.create({
+          name: displayName,
+          email: normalizedEmail,
+          role: totalUsers === 0 ? 'admin' : 'user',
+          passwordHash: 'google-oauth'
+        });
       }
       return res.json(authPayload(user));
     }

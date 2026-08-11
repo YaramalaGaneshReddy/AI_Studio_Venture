@@ -98,7 +98,7 @@ router.patch('/users/:id/role', async (req, res, next) => {
 // DELETE /api/admin/users/:id
 router.delete('/users/:id', async (req, res, next) => {
   try {
-    const currentUserId = req.user._id || req.user.id;
+    const currentUserId = String(req.user._id || req.user.id);
     if (req.params.id === currentUserId) {
       throw httpError(400, 'You cannot delete your own admin account');
     }
