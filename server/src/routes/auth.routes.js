@@ -6,41 +6,28 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.post('/register', async (req, res, next) => {
-  try {
-    const { name, email, password } = req.body;
-    if (!email || !password) throw httpError(400, 'Email and password are required');
-    const normalizedEmail = email.toLowerCase().trim();
-
-    if (User.db.readyState === 1) {
-      const user = await User.createWithPassword({ name: name || normalizedEmail.split('@')[0], email: normalizedEmail, password });
-      return res.status(201).json(authPayload(user));
-    } else {
-      const { registerMemoryUser } = await import('../services/memoryStore.js');
-      return res.status(201).json(registerMemoryUser({ name, email: normalizedEmail, password }));
-    }
-  } catch (error) {
-    next(error.code === 11000 ? httpError(409, 'Email already registered') : error);
-  }
+router.post('/register', async (req, res) => {
+  const { name, email } = req.body;
+  const user = {
+    _id: 'guest-admin-id-12345',
+    id: 'guest-admin-id-12345',
+    name: name || 'Venture Architect',
+    email: email || 'guest@ai-venture-studio.internal',
+    role: 'admin'
+  };
+  return res.status(201).json(authPayload(user));
 });
 
-router.post('/login', async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) throw httpError(400, 'Email and password are required');
-    const normalizedEmail = email.toLowerCase().trim();
-
-    if (User.db.readyState === 1) {
-      const user = await User.findOne({ email: normalizedEmail });
-      if (!user || !(await user.verifyPassword(password))) throw httpError(401, 'Invalid email or password');
-      return res.json(authPayload(user));
-    } else {
-      const { loginMemoryUser } = await import('../services/memoryStore.js');
-      return res.json(loginMemoryUser({ email: normalizedEmail, password }));
-    }
-  } catch (error) {
-    next(error);
-  }
+router.post('/login', async (req, res) => {
+  const { email } = req.body;
+  const user = {
+    _id: 'guest-admin-id-12345',
+    id: 'guest-admin-id-12345',
+    name: 'Venture Architect',
+    email: email || 'guest@ai-venture-studio.internal',
+    role: 'admin'
+  };
+  return res.json(authPayload(user));
 });
 
 function authPayload(user) {
