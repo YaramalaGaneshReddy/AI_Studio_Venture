@@ -188,7 +188,7 @@ export function AdminPage() {
               <tbody className="divide-y divide-line">
                 {projects?.map((p) => (
                   <tr key={p._id} className="hover:bg-slate-50/50">
-                    <td className="py-3.5 font-medium text-ink">{p.title}</td>
+                    <td className="py-3.5 font-medium text-ink">{p.startupName}</td>
                     <td className="py-3.5 text-slate-600">{p.industry}</td>
                     <td className="py-3.5 text-slate-600">{p.user?.name || 'Unknown'}</td>
                     <td className="py-3.5">

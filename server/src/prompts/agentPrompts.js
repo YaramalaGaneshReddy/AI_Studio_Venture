@@ -12,7 +12,7 @@ const responsibilities = {
   pitch_deck: ['10-15 pitch deck slides', 'Narrative flow', 'Investor-ready slide bullets']
 };
 
-export function buildAgentPrompt(project, agent) {
+export function buildAgentPrompt(project, agent, searchSignal = '') {
   const deps = agent.dependencies || [];
   
   // Only include outputs from explicitly declared upstream dependencies
@@ -28,6 +28,10 @@ export function buildAgentPrompt(project, agent) {
     })
     .join('\n\n');
 
+  const searchSection = searchSignal
+    ? `\nReal-Time Market Intelligence (use this as supporting evidence):\n${searchSignal}\n`
+    : '';
+
   return `
 You are the ${agent.name} in an AI Venture Studio. Create a concise, investor-grade markdown report.
 
@@ -42,7 +46,7 @@ Startup Baseline:
 
 Core Focus Areas:
 ${(responsibilities[agent.key] || []).map((item) => `- ${item}`).join('\n')}
-
+${searchSection}
 Required Input Context:
 ${priorReports || 'No prior dependency inputs needed.'}
 

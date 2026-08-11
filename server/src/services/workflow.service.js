@@ -2,6 +2,10 @@ import { buildAgentPrompt } from '../prompts/agentPrompts.js';
 import { generateWithOllama } from './llm.service.js';
 import { calculateStartupScore } from './scoring.service.js';
 import { upsertReport } from './report.service.js';
+import { fetchSearchSignal } from './search.service.js';
+
+// Agents that benefit from real-time web search context
+const SEARCH_AGENTS = new Set(['market_research', 'competitor_analysis']);
 
 const saveProject = async (p) => {
   if (typeof p.save === 'function') await p.save();
@@ -38,8 +42,16 @@ async function executeAgent(project, agentRun, mode) {
   while (attempt <= maxRetries) {
     try {
       attempt++;
-      const prompt = buildAgentPrompt(project, agentRun);
-      const result = await generateWithOllama(prompt, { timeoutMs: 4000, num_predict: 300 });
+      // Fetch live search signal for market/competitor agents
+      let searchSignal = '';
+      if (SEARCH_AGENTS.has(agentRun.key)) {
+        const searchQuery = `${project.startupName} ${project.industry} ${project.country} market analysis 2024`;
+        console.log(`[SEARCH] Fetching market signals for ${agentRun.key}...`);
+        searchSignal = await fetchSearchSignal(searchQuery, 5);
+        if (searchSignal) console.log(`[SEARCH] Got ${searchSignal.split('\n').length} signal lines for ${agentRun.key}`);
+      }
+      const prompt = buildAgentPrompt(project, agentRun, searchSignal);
+      const result = await generateWithOllama(prompt, { timeoutMs: 90000, num_predict: 1500 });
 
       agentRun.output = result.content;
       agentRun.tokenUsage = result.tokenUsage;
