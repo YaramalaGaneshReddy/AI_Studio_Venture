@@ -10,12 +10,28 @@ import analyticsRoutes from './routes/analytics.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+const CORS_OPTIONS = {
+  origin: true,                   // reflect request origin — works for all Vercel preview URLs
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204       // some browsers choke on 200 for OPTIONS
+};
+
 export function createApp() {
   const app = express();
-  app.use(cors());
+
+  // Pre-flight OPTIONS must be answered BEFORE any other middleware
+  app.options('*', cors(CORS_OPTIONS));
+  app.use(cors(CORS_OPTIONS));
   app.use(express.json({ limit: '5mb' }));
 
-  app.get(['/api/health', '/health'], (_req, res) => res.json({ ok: true, service: 'ai-venture-studio' }));
+  // Health check
+  app.get(['/api/health', '/health'], (_req, res) =>
+    res.json({ ok: true, service: 'ai-venture-studio', ts: Date.now() })
+  );
+
+  // Routes — both with and without /api prefix so Vercel rewrites + direct calls both work
   app.use(['/api/auth', '/auth'], authRoutes);
   app.use(['/api/projects', '/projects'], projectRoutes);
   app.use(['/api/workflows', '/workflows'], workflowRoutes);
@@ -26,9 +42,14 @@ export function createApp() {
   app.use(['/api/email', '/email'], emailRoutes);
   app.use(['/api/admin', '/admin'], adminRoutes);
 
+  // 404 handler for unmatched /api routes
+  app.use('/api', (_req, res) => res.status(404).json({ message: 'API endpoint not found' }));
+
+  // Central error handler
   app.use((error, _req, res, _next) => {
-    console.error(error);
-    res.status(error.status || 500).json({ message: error.message || 'Unexpected server error' });
+    console.error('[server error]', error.message || error);
+    const status = error.status || 500;
+    res.status(status).json({ message: error.message || 'Unexpected server error' });
   });
 
   return app;
