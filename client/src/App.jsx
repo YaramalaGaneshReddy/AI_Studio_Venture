@@ -54,7 +54,7 @@ export default function App() {
   const ActiveView = views[activeView];
 
   const defaultUser = {
-    id: 'guest-admin-id-12345',
+    id: '000000000000000000000001',
     name: 'Venture Architect',
     email: 'guest@ai-venture-studio.internal',
     role: 'admin'

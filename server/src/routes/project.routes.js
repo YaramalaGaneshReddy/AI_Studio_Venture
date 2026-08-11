@@ -56,7 +56,7 @@ router.post('/:id/run', async (req, res, next) => {
     const project = await findProject(req);
     const { runWorkflow } = await import('../services/workflow.service.js');
     const autoMode = req.body.autoMode ?? req.body.mode === 'auto';
-    res.json(await runWorkflow(project, { autoMode }));
+    res.json(await runWorkflow(project, { mode: autoMode ? 'auto' : 'manual' }));
   } catch (error) {
     next(error);
   }

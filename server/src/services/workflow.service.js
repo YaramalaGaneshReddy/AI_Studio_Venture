@@ -73,7 +73,8 @@ async function executeAgent(project, agentRun, mode) {
  * Main DAG Workflow Runner
  * Executes ready agents in parallel (waves) without blocking unrelated nodes.
  */
-export async function runWorkflow(project, { mode = 'manual' } = {}) {
+export async function runWorkflow(project, { mode = 'manual', autoMode = false } = {}) {
+  mode = autoMode ? 'auto' : mode;
   project.status = 'running';
   await saveProject(project);
 
@@ -155,4 +156,3 @@ export async function decideAgent(project, agentKey, { decision, editedContent }
 
   return runWorkflow(project, { mode: 'manual' });
 }
-

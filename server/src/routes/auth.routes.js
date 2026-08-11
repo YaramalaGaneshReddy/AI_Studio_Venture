@@ -9,8 +9,8 @@ const router = Router();
 router.post('/register', async (req, res) => {
   const { name, email } = req.body;
   const user = {
-    _id: 'guest-admin-id-12345',
-    id: 'guest-admin-id-12345',
+    _id: '000000000000000000000001',
+    id: '000000000000000000000001',
     name: name || 'Venture Architect',
     email: email || 'guest@ai-venture-studio.internal',
     role: 'admin'
@@ -21,8 +21,8 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email } = req.body;
   const user = {
-    _id: 'guest-admin-id-12345',
-    id: 'guest-admin-id-12345',
+    _id: '000000000000000000000001',
+    id: '000000000000000000000001',
     name: 'Venture Architect',
     email: email || 'guest@ai-venture-studio.internal',
     role: 'admin'

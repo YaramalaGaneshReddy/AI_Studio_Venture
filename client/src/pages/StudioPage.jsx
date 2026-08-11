@@ -22,7 +22,7 @@ export function StudioPage() {
   const queryClient = useQueryClient();
   const { selectedProjectId, setSelectedProjectId } = useStudioStore();
   const [form, setForm] = useState(initialForm);
-  const [autoMode, setAutoMode] = useState(false);
+  const [autoMode, setAutoMode] = useState(true);
   const [editedContent, setEditedContent] = useState('');
   const [email, setEmail] = useState('');
 
@@ -31,7 +31,11 @@ export function StudioPage() {
     queryKey: ['project', selectedProjectId],
     queryFn: () => getProject(selectedProjectId),
     enabled: Boolean(selectedProjectId),
-    refetchInterval: selectedProjectId ? 3000 : false
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      const hasActiveAgents = query.state.data?.agentRuns?.some((run) => ['running', 'pending'].includes(run.status));
+      return selectedProjectId && (status === 'running' || hasActiveAgents) ? 1000 : selectedProjectId ? 3000 : false;
+    }
   });
 
   const createMutation = useMutation({
@@ -137,7 +141,7 @@ export function StudioPage() {
               <div className="flex flex-wrap gap-2">
                 <label className="flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm">
                   <input type="checkbox" checked={autoMode} onChange={(event) => setAutoMode(event.target.checked)} />
-                  Auto Mode
+                  Fast Auto Mode
                 </label>
                 <Button onClick={() => runMutation.mutate()} disabled={!selectedProjectId || runMutation.isPending}>
                   <Play size={16} />

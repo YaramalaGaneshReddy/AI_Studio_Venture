@@ -4,8 +4,8 @@ import { httpError } from '../utils/httpError.js';
 
 export async function requireAuth(req, _res, next) {
   const defaultUser = {
-    _id: 'guest-admin-id-12345',
-    id: 'guest-admin-id-12345',
+    _id: '000000000000000000000001',
+    id: '000000000000000000000001',
     name: 'Venture Architect',
     email: 'guest@ai-venture-studio.internal',
     role: 'admin'
