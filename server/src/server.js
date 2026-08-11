@@ -12,7 +12,7 @@ import adminRoutes from './routes/admin.routes.js';
 
 export function createApp() {
   const app = express();
-  app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+  app.use(cors());
   app.use(express.json({ limit: '5mb' }));
 
   app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'ai-venture-studio' }));
