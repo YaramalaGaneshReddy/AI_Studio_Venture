@@ -2,7 +2,8 @@ import { useMutation } from '@tanstack/react-query';
 import { LockKeyhole } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
-import { login, register } from '../services/api';
+import { GoogleAuthButton } from '../components/GoogleAuthButton';
+import { login, register, loginWithGoogle } from '../services/api';
 import { useStudioStore } from '../store/useStudioStore';
 
 export function AuthPage() {
@@ -11,7 +12,10 @@ export function AuthPage() {
   const [form, setForm] = useState({ name: '', email: 'founder@example.com', password: 'password123' });
 
   const mutation = useMutation({
-    mutationFn: () => (mode === 'login' ? login(form) : register(form)),
+    mutationFn: (type) => {
+      if (type === 'google') return loginWithGoogle();
+      return mode === 'login' ? login(form) : register(form);
+    },
     onSuccess: (data) => setUser(data.user)
   });
 
@@ -23,7 +27,18 @@ export function AuthPage() {
         </div>
         <h1 className="mt-5 text-2xl font-semibold">AI Venture Studio</h1>
         <p className="mt-1 text-sm text-slate-500">Sign in to build investor-ready startup blueprints.</p>
-        <div className="mt-5 grid grid-cols-2 rounded-md border border-line bg-white p-1">
+        
+        <div className="mt-5">
+          <GoogleAuthButton onClick={() => mutation.mutate('google')} disabled={mutation.isPending} />
+        </div>
+
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-line" />
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Or continue with email</span>
+          <div className="h-px flex-1 bg-line" />
+        </div>
+
+        <div className="grid grid-cols-2 rounded-md border border-line bg-white p-1">
           {['login', 'register'].map((item) => (
             <button key={item} onClick={() => setMode(item)} className={`h-9 rounded text-sm font-medium capitalize ${mode === item ? 'bg-ink text-white' : 'text-slate-500'}`}>
               {item}
@@ -36,10 +51,11 @@ export function AuthPage() {
           <input className="h-10 rounded-md border border-line px-3 text-sm" type="password" placeholder="Password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
         </div>
         {mutation.error ? <p className="mt-3 text-sm text-red-600">{mutation.error.response?.data?.message || mutation.error.message}</p> : null}
-        <Button className="mt-5 w-full" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+        <Button className="mt-5 w-full" onClick={() => mutation.mutate('form')} disabled={mutation.isPending}>
           Continue
         </Button>
       </section>
     </div>
   );
 }
+

@@ -27,6 +27,12 @@ export async function login(payload) {
   return data;
 }
 
+export async function loginWithGoogle() {
+  const { data } = await api.post('/auth/google');
+  localStorage.setItem('avs_token', data.token);
+  return data;
+}
+
 export async function register(payload) {
   const { data } = await api.post('/auth/register', payload);
   localStorage.setItem('avs_token', data.token);

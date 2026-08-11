@@ -30,6 +30,17 @@ router.post('/login', async (req, res) => {
   return res.json(authPayload(user));
 });
 
+router.post('/google', async (req, res) => {
+  const user = {
+    _id: '000000000000000000000001',
+    id: '000000000000000000000001',
+    name: 'Google User',
+    email: 'google.user@example.com',
+    role: 'admin'
+  };
+  return res.json(authPayload(user));
+});
+
 function authPayload(user) {
   const token = jwt.sign({ sub: user._id.toString(), role: user.role }, process.env.JWT_SECRET || 'development-secret', { expiresIn: '7d' });
   return { token, user: { id: user._id, name: user.name, email: user.email, role: user.role } };
