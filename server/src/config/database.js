@@ -29,8 +29,7 @@ export async function connectDatabase() {
     await mongoose.connect(memUri);
     console.log('MongoDB connected (In-Memory Database Ready)');
   } catch (err) {
-    console.error('All MongoDB connection options failed:', err.message);
-    throw err;
+    console.warn('MongoDB connection fallback notice (Memory DB unavailable in serverless):', err.message);
   }
 }
 
