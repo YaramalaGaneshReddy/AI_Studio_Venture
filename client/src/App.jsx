@@ -6,8 +6,8 @@ import { AuthPage } from './pages/AuthPage';
 import { BoardroomPage } from './pages/BoardroomPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MemoryPage } from './pages/MemoryPage';
-import { StudioPage } from './pages/StudioPage';
 import { getMe } from './services/api';
+import { useStudioStore } from './store/useStudioStore';
 
 const views = {
   studio: StudioPage,
