@@ -15,16 +15,16 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: '5mb' }));
 
-  app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'ai-venture-studio' }));
-  app.use('/api/auth', authRoutes);
-  app.use('/api/projects', projectRoutes);
-  app.use('/api/workflows', workflowRoutes);
-  app.use('/api/exports', exportRoutes);
-  app.use('/api/boardroom', boardroomRoutes);
-  app.use('/api/memory', memoryRoutes);
-  app.use('/api/analytics', analyticsRoutes);
-  app.use('/api/email', emailRoutes);
-  app.use('/api/admin', adminRoutes);
+  app.get(['/api/health', '/health'], (_req, res) => res.json({ ok: true, service: 'ai-venture-studio' }));
+  app.use(['/api/auth', '/auth'], authRoutes);
+  app.use(['/api/projects', '/projects'], projectRoutes);
+  app.use(['/api/workflows', '/workflows'], workflowRoutes);
+  app.use(['/api/exports', '/exports'], exportRoutes);
+  app.use(['/api/boardroom', '/boardroom'], boardroomRoutes);
+  app.use(['/api/memory', '/memory'], memoryRoutes);
+  app.use(['/api/analytics', '/analytics'], analyticsRoutes);
+  app.use(['/api/email', '/email'], emailRoutes);
+  app.use(['/api/admin', '/admin'], adminRoutes);
 
   app.use((error, _req, res, _next) => {
     console.error(error);

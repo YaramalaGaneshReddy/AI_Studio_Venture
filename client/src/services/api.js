@@ -27,8 +27,8 @@ export async function login(payload) {
   return data;
 }
 
-export async function loginWithGoogle() {
-  const { data } = await api.post('/auth/google');
+export async function loginWithGoogle(payload) {
+  const { data } = await api.post('/auth/google', payload);
   localStorage.setItem('avs_token', data.token);
   return data;
 }

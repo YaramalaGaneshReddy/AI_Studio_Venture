@@ -6,36 +6,51 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 router.post('/register', async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
+  if (!email || !emailRegex.test(email)) {
+    return res.status(400).json({ message: 'A valid email address is required.' });
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+  }
   const user = {
     _id: '000000000000000000000001',
     id: '000000000000000000000001',
     name: name || 'Venture Architect',
-    email: email || 'guest@ai-venture-studio.internal',
+    email: email.toLowerCase().trim(),
     role: 'admin'
   };
   return res.status(201).json(authPayload(user));
 });
 
 router.post('/login', async (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
+  if (!email || !emailRegex.test(email)) {
+    return res.status(400).json({ message: 'A valid email address is required.' });
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+  }
   const user = {
     _id: '000000000000000000000001',
     id: '000000000000000000000001',
     name: 'Venture Architect',
-    email: email || 'guest@ai-venture-studio.internal',
+    email: email.toLowerCase().trim(),
     role: 'admin'
   };
   return res.json(authPayload(user));
 });
 
 router.post('/google', async (req, res) => {
+  const { email, name } = req.body || {};
   const user = {
     _id: '000000000000000000000001',
     id: '000000000000000000000001',
-    name: 'Google User',
-    email: 'google.user@example.com',
+    name: name || 'Google User',
+    email: email || 'google.user@example.com',
     role: 'admin'
   };
   return res.json(authPayload(user));
