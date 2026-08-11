@@ -7,7 +7,7 @@ import { BoardroomPage } from './pages/BoardroomPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MemoryPage } from './pages/MemoryPage';
 import { StudioPage } from './pages/StudioPage';
-import { useStudioStore } from './store/useStudioStore';
+import { getMe } from './services/api';
 
 const views = {
   studio: StudioPage,
@@ -34,8 +34,7 @@ export default function App() {
 
     const token = localStorage.getItem('avs_token');
     if (token && !user) {
-      import('./services/api')
-        .then((m) => m.getMe())
+      getMe()
         .then((res) => {
           setUser(res.user);
         })
