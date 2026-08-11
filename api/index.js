@@ -9,6 +9,16 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../server/.env') });
 
 const app = createApp();
-connectDatabase().catch((err) => console.error('DB Error:', err.message));
+let isConnected = false;
 
-export default app;
+export default async function handler(req, res) {
+  if (!isConnected) {
+    try {
+      await connectDatabase();
+      isConnected = true;
+    } catch (err) {
+      console.error('DB Connection error in serverless handler:', err.message);
+    }
+  }
+  return app(req, res);
+}
