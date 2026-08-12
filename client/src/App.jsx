@@ -39,15 +39,20 @@ export default function App() {
     window.addEventListener('avs-unauthorized', handleUnauthorized);
 
     const token = localStorage.getItem('avs_token');
-    if (token && !user) {
+
+    if (token) {
+      // Always validate the token with the server on boot.
+      // This catches expired/invalid tokens even when a persisted user exists.
       getMe()
         .then((res) => setUser(res.user))
         .catch(() => {
-          // Token is stale / invalid — clear it and show login page
+          // Token is stale / invalid — clear everything and show login
           logout();
         })
         .finally(() => setLoadingMe(false));
     } else {
+      // No token at all — if a persisted user exists, clear it
+      if (user) logout();
       setLoadingMe(false);
     }
 

@@ -51,10 +51,14 @@ async function executeAgent(project, agentRun, mode) {
         if (searchSignal) console.log(`[SEARCH] Got ${searchSignal.split('\n').length} signal lines for ${agentRun.key}`);
       }
       const prompt = buildAgentPrompt(project, agentRun, searchSignal);
-      const result = await generateWithOllama(prompt, { timeoutMs: 90000, num_predict: 1500 });
+      const result = await generateWithOllama(prompt, {
+        agentKey: agentRun.key,
+        timeoutMs: 90000
+      });
 
       agentRun.output = result.content;
       agentRun.tokenUsage = result.tokenUsage;
+      agentRun.usedFallback = result.usedFallback || false;
       agentRun.runtimeMs = Date.now() - startedAt;
       agentRun.completedAt = new Date();
       agentRun.status = mode === 'auto' ? 'completed' : 'awaiting_approval';

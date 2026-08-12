@@ -6,7 +6,20 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('avs_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // If no token and it's not a public auth endpoint, trigger re-login
+    const isAuthEndpoint = config.url?.startsWith('/auth/');
+    if (!isAuthEndpoint) {
+      // Dispatch unauthorized event so App.jsx calls logout() → shows AuthPage
+      window.dispatchEvent(new Event('avs-unauthorized'));
+      // Reject with a clear message instead of letting "canceled" surface in the UI
+      return Promise.reject(
+        Object.assign(new Error('Session expired. Please log in again.'), { isSessionExpired: true })
+      );
+    }
+  }
   return config;
 });
 

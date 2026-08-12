@@ -55,7 +55,7 @@ async function searchWithTavily(query, apiKey, maxResults) {
     const results = (data.results || []).slice(0, maxResults);
     if (!results.length) return '';
     return results
-      .map((r, i) => `[${i + 1}] ${r.title}: ${(r.content || r.snippet || '').slice(0, 300)}`)
+      .map((r, i) => `[${i + 1}] ${r.title}: ${(r.content || r.snippet || '').slice(0, 200)}`)
       .join('\n');
   } finally {
     clearTimeout(timer);
@@ -69,6 +69,6 @@ async function searchWithDuckDuckGo(query, maxResults) {
   const hits = (results.results || []).slice(0, maxResults);
   if (!hits.length) return '';
   return hits
-    .map((r, i) => `[${i + 1}] ${r.title}: ${(r.description || '').slice(0, 300)}`)
+    .map((r, i) => `[${i + 1}] ${r.title}: ${(r.description || '').slice(0, 200)}`)
     .join('\n');
 }
