@@ -1,4 +1,5 @@
-import ReactFlow, { Background, Controls } from 'react-flow-renderer';
+import ReactFlow, { Background, Controls } from 'reactflow';
+import 'reactflow/dist/style.css';
 import { statusStyles } from '../utils/status';
 
 // DAG Level Assignment (Waves)
