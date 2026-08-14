@@ -100,3 +100,24 @@ curl http://localhost:11434/api/tags
 | pitch_deck | primary (llama3) | ~25–50s |
 
 > With `OLLAMA_NUM_PARALLEL=4`, the first parallel wave (all agents with no dependencies) runs concurrently — total wall-clock time approaches the slowest single agent, not the sum of all agents.
+
+## Vercel Deployment
+
+This project is optimized for direct, one-click deployments to **Vercel** as a monorepo using npm workspaces.
+
+### 1. Project Configuration on Vercel
+When importing this repository into Vercel, use the default settings. The root [vercel.json](file:///c:/Users/ganes/OneDrive/Desktop/Building an AI Venture Studio/vercel.json) file handles directory mapping, rewrites, and workspaces compilation:
+- **Build Command:** `npm run build`
+- **Output Directory:** `client/dist`
+
+### 2. Environment Variables
+Add the following Environment Variables in the Vercel Dashboard project settings:
+*   `MONGODB_URI`: Your MongoDB Atlas connection string.
+*   `JWT_SECRET`: A secure random string for signing JSON Web Tokens.
+*   `TAVILY_API_KEY`: *(Optional)* Key to enable live web search context.
+*   `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM`: *(Optional)* Settings to send blueprints via email.
+*   `GEMINI_API_KEY`: *(Optional)* Set to speed up agent generation in production.
+
+### 3. Serverless Ephemeral Storage
+If MongoDB is not connected, the server automatically falls back to an in-memory JSON file. On Vercel, the database is mapped to `/tmp/memory_db.json` (as the rest of the workspace is read-only). Note that `/tmp` is ephemeral and gets recycled when Vercel serverless instances are scaled down or rotated. Connecting a MongoDB Atlas instance is highly recommended for production persistency.
+

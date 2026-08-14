@@ -1,0 +1,5 @@
+{
+  "watch": ["src"],
+  "ext": "js,mjs,cjs,json",
+  "ignore": ["memory_db.json", "**/memory_db.json", "*.db.json"]
+}

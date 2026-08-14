@@ -11,28 +11,32 @@ router.use(requireAuth);
 
 // Ensure user has admin role (or auto-grant if user is the first user)
 router.use(async (req, res, next) => {
-  if (req.user.role === 'admin') return next();
-  if (User.db.readyState === 1) {
-    const totalUsers = await User.countDocuments();
-    if (totalUsers === 1) {
-      req.user.role = 'admin';
-      if (typeof req.user.save === 'function') await req.user.save();
-      return next();
+  try {
+    if (req.user.role === 'admin') return next();
+    if (User?.db?.readyState === 1) {
+      const totalUsers = await User.countDocuments();
+      if (totalUsers === 1) {
+        req.user.role = 'admin';
+        if (typeof req.user.save === 'function') await req.user.save();
+        return next();
+      }
+    } else {
+      const { getMemoryUsers } = await import('../services/memoryStore.js');
+      if (getMemoryUsers().length === 1) {
+        req.user.role = 'admin';
+        return next();
+      }
     }
-  } else {
-    const { getMemoryUsers } = await import('../services/memoryStore.js');
-    if (getMemoryUsers().length === 1) {
-      req.user.role = 'admin';
-      return next();
-    }
+    return next(httpError(403, 'Admin privilege required'));
+  } catch (err) {
+    return next(err);
   }
-  return next(httpError(403, 'Admin privilege required'));
 });
 
 // GET /api/admin/stats
 router.get('/stats', async (req, res, next) => {
   try {
-    if (User.db.readyState === 1) {
+    if (User?.db?.readyState === 1) {
       const totalUsers = await User.countDocuments();
       const totalProjects = await Project.countDocuments();
       const allProjects = await Project.find({}, 'agentRuns startupScore');
@@ -62,7 +66,7 @@ router.get('/stats', async (req, res, next) => {
 // GET /api/admin/users
 router.get('/users', async (req, res, next) => {
   try {
-    if (User.db.readyState === 1) {
+    if (User?.db?.readyState === 1) {
       const users = await User.find({}, '-passwordHash').sort({ createdAt: -1 });
       res.json(users);
     } else {
@@ -80,7 +84,7 @@ router.patch('/users/:id/role', async (req, res, next) => {
     const { role } = req.body;
     if (!['user', 'admin'].includes(role)) throw httpError(400, 'Invalid role');
 
-    if (User.db.readyState === 1) {
+    if (User?.db?.readyState === 1) {
       const targetUser = await User.findById(req.params.id);
       if (!targetUser) throw httpError(404, 'User not found');
       targetUser.role = role;
@@ -102,7 +106,7 @@ router.delete('/users/:id', async (req, res, next) => {
     if (req.params.id === currentUserId) {
       throw httpError(400, 'You cannot delete your own admin account');
     }
-    if (User.db.readyState === 1) {
+    if (User?.db?.readyState === 1) {
       const targetUser = await User.findByIdAndDelete(req.params.id);
       if (!targetUser) throw httpError(404, 'User not found');
       await Project.deleteMany({ user: targetUser._id });
@@ -119,8 +123,13 @@ router.delete('/users/:id', async (req, res, next) => {
 // GET /api/admin/projects
 router.get('/projects', async (req, res, next) => {
   try {
-    const projects = await Project.find().populate('user', 'name email').sort({ updatedAt: -1 });
-    res.json(projects);
+    if (Project?.db?.readyState === 1) {
+      const projects = await Project.find().populate('user', 'name email').sort({ updatedAt: -1 });
+      res.json(projects);
+    } else {
+      const { getMemoryProjects } = await import('../services/memoryStore.js');
+      res.json(getMemoryProjects());
+    }
   } catch (error) {
     next(error);
   }

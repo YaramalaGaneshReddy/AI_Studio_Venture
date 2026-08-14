@@ -1,3 +1,4 @@
+// Trigger nodemon wake up
 import dotenv from 'dotenv';
 import dns from 'node:dns';
 import path from 'node:path';

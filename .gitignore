@@ -8,3 +8,9 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 Thumbs.db
+
+# Database and build caches
+memory_db.json
+**/memory_db.json
+.vite/
+**/dist/

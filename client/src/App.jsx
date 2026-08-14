@@ -60,7 +60,10 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const ActiveView = views[activeView] || StudioPage;
+  // Redirect non-admin users away from the admin view
+  const safeView = activeView === 'admin' && user?.role !== 'admin' ? 'studio' : activeView;
+  const ActiveView = views[safeView] || StudioPage;
+
 
   if (loadingMe) {
     return (
@@ -79,8 +82,9 @@ export default function App() {
   }
 
   return (
-    <AppShell activeView={activeView} onNavigate={setActiveView}>
+    <AppShell activeView={safeView} onNavigate={setActiveView}>
       <ActiveView onNavigate={setActiveView} />
     </AppShell>
   );
 }
+

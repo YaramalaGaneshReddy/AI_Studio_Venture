@@ -24,30 +24,41 @@ router.post('/register', async (req, res, next) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
     }
 
-    // Try MongoDB first; fall back to in-memory store
     if (User?.db?.readyState === 1) {
-      const bcrypt = await import('bcryptjs');
-      const exists = await User.findOne({ email: email.toLowerCase().trim() });
-      if (exists) {
-        return res.status(409).json({ message: 'Email already registered.' });
+      console.log(`[Auth Register] Registering user ${email} in MongoDB Database.`);
+      try {
+        const bcrypt = await import('bcryptjs');
+        const exists = await User.findOne({ email: email.toLowerCase().trim() });
+        if (exists) {
+          return res.status(409).json({ message: 'Email already registered.' });
+        }
+        const passwordHash = await bcrypt.default.hash(password, 10);
+        const totalUsers = await User.countDocuments();
+        const doc = await User.create({
+          name: name?.trim() || email.split('@')[0],
+          email: email.toLowerCase().trim(),
+          passwordHash,
+          role: totalUsers === 0 ? 'admin' : 'user'
+        });
+        const payload = authPayload(doc);
+        return res.status(201).json(payload);
+      } catch (dbErr) {
+        console.error('[Auth Register Error] MongoDB registration failed:', dbErr.message);
+        return res.status(500).json({ message: dbErr.message || 'Database registration error.' });
       }
-      const passwordHash = await bcrypt.default.hash(password, 10);
-      const totalUsers = await User.countDocuments();
-      const doc = await User.create({
-        name: name?.trim() || email.split('@')[0],
-        email: email.toLowerCase().trim(),
-        passwordHash,
-        role: totalUsers === 0 ? 'admin' : 'user'
-      });
-      return res.status(201).json(authPayload(doc));
+    } else {
+      console.log(`[Auth Register] Registering user ${email} in MemoryStore (JSON fallback).`);
+      try {
+        const result = registerMemoryUser({ name, email, password });
+        return res.status(201).json(result);
+      } catch (memErr) {
+        console.error('[Auth Register Error] MemoryStore registration failed:', memErr.message);
+        return res.status(memErr.status || 500).json({ message: memErr.message || 'MemoryStore registration error.' });
+      }
     }
-
-    // In-memory path (Vercel/serverless)
-    const result = registerMemoryUser({ name, email, password });
-    return res.status(201).json(result);
   } catch (err) {
-    if (err.status) return res.status(err.status).json({ message: err.message });
-    next(err);
+    console.error('[Auth Register Exception]:', err.message);
+    return res.status(500).json({ message: err.message || 'Unexpected registration error.' });
   }
 });
 
@@ -63,22 +74,32 @@ router.post('/login', async (req, res, next) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
     }
 
-    // Try MongoDB first; fall back to in-memory store
     if (User?.db?.readyState === 1) {
-      const bcrypt = await import('bcryptjs');
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
-      if (!user || !(await bcrypt.default.compare(password, user.passwordHash))) {
-        return res.status(401).json({ message: 'Invalid email or password.' });
+      console.log(`[Auth Login] Authenticating user ${email} via MongoDB Database.`);
+      try {
+        const bcrypt = await import('bcryptjs');
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user || !(await bcrypt.default.compare(password, user.passwordHash))) {
+          return res.status(401).json({ message: 'Invalid email or password.' });
+        }
+        return res.json(authPayload(user));
+      } catch (dbErr) {
+        console.error('[Auth Login Error] MongoDB authentication failed:', dbErr.message);
+        return res.status(500).json({ message: dbErr.message || 'Database authentication error.' });
       }
-      return res.json(authPayload(user));
+    } else {
+      console.log(`[Auth Login] Authenticating user ${email} via MemoryStore (JSON fallback).`);
+      try {
+        const result = loginMemoryUser({ email, password });
+        return res.json(result);
+      } catch (memErr) {
+        console.error('[Auth Login Error] MemoryStore authentication failed:', memErr.message);
+        return res.status(memErr.status || 401).json({ message: memErr.message || 'MemoryStore authentication error.' });
+      }
     }
-
-    // In-memory path
-    const result = loginMemoryUser({ email, password });
-    return res.json(result);
   } catch (err) {
-    if (err.status) return res.status(err.status).json({ message: err.message });
-    next(err);
+    console.error('[Auth Login Exception]:', err.message);
+    return res.status(500).json({ message: err.message || 'Unexpected login error.' });
   }
 });
 

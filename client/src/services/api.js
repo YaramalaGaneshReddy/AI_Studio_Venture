@@ -8,18 +8,10 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('avs_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    // If no token and it's not a public auth endpoint, trigger re-login
-    const isAuthEndpoint = config.url?.startsWith('/auth/');
-    if (!isAuthEndpoint) {
-      // Dispatch unauthorized event so App.jsx calls logout() → shows AuthPage
-      window.dispatchEvent(new Event('avs-unauthorized'));
-      // Reject with a clear message instead of letting "canceled" surface in the UI
-      return Promise.reject(
-        Object.assign(new Error('Session expired. Please log in again.'), { isSessionExpired: true })
-      );
-    }
   }
+  // No token: let the request proceed without Authorization header.
+  // The server will respond with 401, which the response interceptor below
+  // handles by dispatching avs-unauthorized and clearing state.
   return config;
 });
 

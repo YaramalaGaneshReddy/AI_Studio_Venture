@@ -8,7 +8,7 @@ const navItems = [
   { id: 'boardroom', label: 'Boardroom', icon: Bot },
   { id: 'memory', label: 'Memory', icon: Search },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'admin', label: 'Admin Panel', icon: Shield }
+  { id: 'admin', label: 'Admin Panel', icon: Shield, adminOnly: true }
 ];
 
 export function AppShell({ activeView, onNavigate, children }) {
@@ -29,7 +29,7 @@ export function AppShell({ activeView, onNavigate, children }) {
             </div>
           </div>
           <nav className="mt-8 space-y-1">
-            {navItems.map((item) => {
+            {navItems.filter((item) => !item.adminOnly || user?.role === 'admin').map((item) => {
               const Icon = item.icon;
               return (
                 <button
@@ -73,7 +73,7 @@ export function AppShell({ activeView, onNavigate, children }) {
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">{children}</div>
       </main>
       <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-white lg:hidden">
-        {navItems.map((item) => {
+        {navItems.filter((item) => !item.adminOnly || user?.role === 'admin').map((item) => {
           const Icon = item.icon;
           return (
             <button

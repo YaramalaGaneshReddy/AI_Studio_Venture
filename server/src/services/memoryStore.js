@@ -1,11 +1,66 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const users = new Map();
 const projects = new Map();
 
 // Helper to create admin if first user
 let isFirstUser = true;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isVercel = process.env.VERCEL === '1' || process.env.NOW_BUILDER === '1';
+const dbPath = isVercel
+  ? '/tmp/memory_db.json'
+  : path.resolve(__dirname, '../../memory_db.json');
+
+// Load memory DB from file
+function loadDb() {
+  try {
+    if (fs.existsSync(dbPath)) {
+      const raw = fs.readFileSync(dbPath, 'utf8');
+      if (raw.trim()) {
+        const data = JSON.parse(raw);
+        if (data.users) {
+          for (const [id, user] of Object.entries(data.users)) {
+            users.set(id, user);
+          }
+        }
+        if (data.projects) {
+          for (const [id, project] of Object.entries(data.projects)) {
+            projects.set(id, project);
+          }
+        }
+        isFirstUser = users.size === 0;
+        console.log(`[MemoryStore] Loaded ${users.size} users and ${projects.size} projects from memory_db.json`);
+      }
+    }
+  } catch (err) {
+    console.error('[MemoryStore] Error loading memory_db.json:', err.message);
+  }
+}
+
+// Save memory DB to file
+export function saveDb() {
+  try {
+    const data = {
+      users: Object.fromEntries(users.entries()),
+      projects: Object.fromEntries(projects.entries())
+    };
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[MemoryStore] Error saving memory_db.json:', err.message);
+  }
+}
+
+// Load database immediately
+loadDb();
+
+// Periodically write to disk to capture mutations (e.g. project runs)
+setInterval(saveDb, 2000).unref();
+
 
 export function registerMemoryUser({ name, email, password }) {
   const normalizedEmail = email.toLowerCase().trim();
@@ -23,6 +78,7 @@ export function registerMemoryUser({ name, email, password }) {
   const user = { _id: id, id, name: name || email.split('@')[0], email: normalizedEmail, passwordHash, role, createdAt: new Date() };
 
   users.set(id, user);
+  saveDb();
   return authPayload(user);
 }
 
@@ -56,6 +112,7 @@ export function updateMemoryUserRole(id, role) {
     throw error;
   }
   user.role = role;
+  saveDb();
   return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
@@ -64,6 +121,7 @@ export function deleteMemoryUser(id) {
   for (const [projId, proj] of projects.entries()) {
     if (proj.user === id) projects.delete(projId);
   }
+  saveDb();
 }
 
 export function getMemoryProjects() {
@@ -127,5 +185,6 @@ export function createMemoryProject(data) {
   };
 
   projects.set(id, project);
+  saveDb();
   return project;
 }
