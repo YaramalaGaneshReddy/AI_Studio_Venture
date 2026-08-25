@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import authRoutes from './routes/auth.routes.js';
@@ -9,6 +12,9 @@ import memoryRoutes from './routes/memory.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CORS_OPTIONS = {
   origin: true,                   // reflect request origin — works for all Vercel preview URLs
@@ -44,6 +50,21 @@ export function createApp() {
 
   // 404 handler for unmatched /api routes
   app.use('/api', (_req, res) => res.status(404).json({ message: 'API endpoint not found' }));
+
+  // Serve static files in production / when built
+  const distPath = path.resolve(__dirname, '../../dist');
+  const clientDistPath = path.resolve(__dirname, '../../client/dist');
+  const staticDir = fs.existsSync(distPath) ? distPath : (fs.existsSync(clientDistPath) ? clientDistPath : null);
+
+  if (staticDir) {
+    app.use(express.static(staticDir));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(staticDir, 'index.html'));
+    });
+  }
 
   // Central error handler
   app.use((error, _req, res, _next) => {
