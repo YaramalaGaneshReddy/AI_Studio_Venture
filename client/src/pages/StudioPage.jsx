@@ -258,7 +258,7 @@ export function StudioPage() {
                   {emailMutation.isPending ? 'Sending Email...' : 'Send Email'}
                 </Button>
                 {emailMutation.data?.skipped ? (
-                  <p className="text-xs text-amber-700 font-medium">SMTP is not configured on the server environment. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in Render Environment Variables.</p>
+                  <p className="text-xs text-amber-700 font-medium">SMTP is not configured on the server environment. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in your server's Environment Variables (e.g. Vercel, Render, or .env).</p>
                 ) : null}
                 {emailMutation.isSuccess && !emailMutation.data?.skipped ? (
                   <p className="text-xs text-emerald-600 font-medium">Email sent successfully to {email}!</p>
