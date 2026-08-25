@@ -255,9 +255,17 @@ export function StudioPage() {
                 <input className="h-10 rounded-md border border-line px-3 text-sm" placeholder="founder@example.com" value={email} onChange={(event) => setEmail(event.target.value)} />
                 <Button onClick={() => emailMutation.mutate()} disabled={!email || emailMutation.isPending}>
                   <Mail size={16} />
-                  Send Email
+                  {emailMutation.isPending ? 'Sending Email...' : 'Send Email'}
                 </Button>
-                {emailMutation.data?.skipped ? <p className="text-xs text-amber-700">SMTP is not configured, so sending was skipped.</p> : null}
+                {emailMutation.data?.skipped ? (
+                  <p className="text-xs text-amber-700 font-medium">SMTP is not configured on the server environment. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in Render Environment Variables.</p>
+                ) : null}
+                {emailMutation.isSuccess && !emailMutation.data?.skipped ? (
+                  <p className="text-xs text-emerald-600 font-medium">Email sent successfully to {email}!</p>
+                ) : null}
+                {emailMutation.error ? (
+                  <p className="text-xs text-red-600 font-medium">{emailMutation.error.response?.data?.message || emailMutation.error.message}</p>
+                ) : null}
               </div>
             </div>
           </aside>
