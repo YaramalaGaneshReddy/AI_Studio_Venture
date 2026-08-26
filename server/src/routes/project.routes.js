@@ -7,7 +7,7 @@ router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   const userId = req.user._id || req.user.id;
-  if (Project.db.readyState === 1) {
+  if (Project?.db?.readyState === 1) {
     const projects = await Project.find({ user: userId }).sort({ updatedAt: -1 });
     return res.json(projects);
   } else {
@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
-    if (Project.db.readyState === 1) {
+    if (Project?.db?.readyState === 1) {
       const project = await Project.create({ ...req.body, user: userId });
       return res.status(201).json(project);
     } else {
@@ -36,7 +36,7 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
-    if (Project.db.readyState === 1) {
+    if (Project?.db?.readyState === 1) {
       const project = await Project.findOne({ _id: req.params.id, user: userId });
       if (!project) return res.status(404).json({ message: 'Project not found' });
       return res.json(project);
@@ -95,7 +95,7 @@ router.post('/:id/email', async (req, res, next) => {
 
 async function findProject(req) {
   const userId = req.user._id || req.user.id;
-  if (Project.db.readyState === 1) {
+  if (Project?.db?.readyState === 1) {
     const project = await Project.findOne({ _id: req.params.id, user: userId });
     if (!project) {
       const error = new Error('Project not found');

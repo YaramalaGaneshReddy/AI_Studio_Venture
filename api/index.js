@@ -8,17 +8,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../server/.env') });
 
+// Create app once per cold start (module-level, cached across warm invocations)
 const app = createApp();
-let isConnected = false;
 
 export default async function handler(req, res) {
-  if (!isConnected) {
-    try {
-      await connectDatabase();
-      isConnected = true;
-    } catch (err) {
-      console.error('DB Connection error in serverless handler:', err.message);
-    }
+  // connectDatabase() is idempotent — returns immediately if already connected
+  try {
+    await connectDatabase();
+  } catch (err) {
+    console.error('[Vercel Handler] DB connection failed, using MemoryStore fallback:', err.message);
   }
   return app(req, res);
 }

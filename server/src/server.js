@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import dns from 'node:dns';
 import cors from 'cors';
 import express from 'express';
 import authRoutes from './routes/auth.routes.js';
@@ -25,6 +26,9 @@ const CORS_OPTIONS = {
 };
 
 export function createApp() {
+  // Ensure IPv4-first DNS resolution for MongoDB Atlas SRV records in serverless environments
+  dns.setDefaultResultOrder('ipv4first');
+
   const app = express();
 
   // Pre-flight OPTIONS must be answered BEFORE any other middleware
