@@ -12,6 +12,8 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
       - key: SMTP_HOST
         value: smtp.resend.com
       - key: SMTP_PORT
@@ -24,3 +26,4 @@ services:
         value: "AI Venture Studio <onboarding@resend.dev>"
       - key: GEMINI_API_KEY
         sync: false
+
