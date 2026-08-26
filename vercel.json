@@ -2,14 +2,15 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "src": "/api/(.*)",
+      "dest": "/api/index.js",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
     },
     {
-      "source": "/((?!api).*)",
-      "destination": "/index.html"
+      "src": "/((?!api).*)",
+      "dest": "/client/dist/index.html"
     }
   ]
-}
+}
