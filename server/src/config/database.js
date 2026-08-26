@@ -73,6 +73,9 @@ dns.resolveTxt = function(hostname, options, callback) {
 };
 
 export async function connectDatabase() {
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+    return;
+  }
   const primaryUri = normalizeMongoUri(process.env.MONGODB_URI);
   const fallbackUri = 'mongodb://127.0.0.1:27017/ai_venture_studio';
 
@@ -82,7 +85,7 @@ export async function connectDatabase() {
       console.log('Active Store: Using MongoDB Atlas');
       return;
     } catch (err) {
-      console.warn('Primary MongoDB Atlas connection failed:', err.message, '- attempting local fallback.');
+      console.warn('Primary MongoDB Atlas connection failed:', err.message, '- attempting fallback.');
     }
   }
 

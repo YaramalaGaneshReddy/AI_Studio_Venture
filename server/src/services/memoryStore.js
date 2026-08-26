@@ -96,8 +96,27 @@ export function loginMemoryUser({ email, password }) {
 }
 
 export function authPayload(user) {
-  const token = jwt.sign({ sub: user.id || user._id, role: user.role }, process.env.JWT_SECRET || 'development-secret', { expiresIn: '7d' });
-  return { token, user: { id: user.id || user._id, _id: user.id || user._id, name: user.name, email: user.email, role: user.role } };
+  const userId = user.id || user._id;
+  const token = jwt.sign(
+    {
+      sub: userId,
+      email: user.email,
+      name: user.name,
+      role: user.role || 'user'
+    },
+    process.env.JWT_SECRET || 'development-secret',
+    { expiresIn: '7d' }
+  );
+  return {
+    token,
+    user: {
+      id: userId,
+      _id: userId,
+      name: user.name,
+      email: user.email,
+      role: user.role || 'user'
+    }
+  };
 }
 
 export function getMemoryUsers() {
